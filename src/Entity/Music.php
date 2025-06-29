@@ -13,9 +13,7 @@ use Doctrine\DBAL\Types\Types;
 class Music
 {
     #[ORM\Id]
-    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
     #[ORM\Column(type: UuidType::NAME, unique: true)]
-    #[ORM\CustomIdGenerator(class: 'doctrine.uuid_generator')]
     #[Groups(['music:get-one', 'music:get-collection'])]
     private ?Uuid $id = null;
 

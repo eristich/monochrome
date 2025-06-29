@@ -19,7 +19,7 @@ class UserFactory
     {
         $user = new User();
         if ($uuid) {
-            $user->setId(new Uuid($uuid));
+            $user->setId(Uuid::fromString($uuid));
         }
 
         $user->setEmail($email);
