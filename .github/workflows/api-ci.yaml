@@ -1,0 +1,172 @@
+name: CI API
+
+env:
+  PHP_VERSION: '8.4'
+  OS_NAME: 'ubuntu-24.04'
+
+on:
+  push:
+    branches:
+      - dev
+      - staging
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  quality:
+    name: Static analysis Easy Coding Standard for API
+    runs-on: ${{ env.OS_NAME }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          tools: composer:v2.8.9
+          extensions: mbstring, pdo_pgsql, xml, intl, bcmath, json, fileinfo, tokenizer, ctype, curl, openssl
+          ini-values: post_max_size=256M, max_execution_time=600, memory_limit=4096M, date.timezone=Europe/Paris
+
+      - name: Setup cache
+        run: echo "COMPOSER_CACHE_DIR=$(composer config cache-dir)/.cache" >> $GITHUB_ENV
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.COMPOSER_CACHE_DIR }}
+          key: ${{ runner.os }}-php${{ env.PHP_VERSION }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php${{ env.PHP_VERSION }}-composer-latest-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-progress
+
+      - name: Check Schema validity
+        run: php bin/console doctrine:schema:validate --no-interaction
+
+      - name: Run ECS and generate checkstyle report
+        id: run-ecs
+        run: vendor/bin/ecs check --output-format=checkstyle > ecs-report.xml
+
+      - name: Upload ECS report
+        uses: actions/upload-artifact@v4.6.2
+        if: always()
+        with:
+          name: ecs-report
+          path: ecs-report.xml
+          retention-days: 20
+
+  test:
+    name: Run Tests for API
+    runs-on: ubuntu-latest
+    services:
+      database:
+        image: postgres:16.8-bookworm
+        env:
+          POSTGRES_DB: app_test
+          POSTGRES_PASSWORD: ChangeMe
+          POSTGRES_USER: app
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -d app_test -U app"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          tools: composer:v2.8.9
+          extensions: mbstring, pdo_pgsql, xml, intl, bcmath, json, fileinfo, tokenizer, ctype, curl, openssl
+          ini-values: post_max_size=256M, max_execution_time=600, memory_limit=4096M, date.timezone=Europe/Paris
+          coverage: pcov
+
+      - name: Setup cache
+        run: echo "COMPOSER_CACHE_DIR=$(composer config cache-dir)/.cache" >> $GITHUB_ENV
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.COMPOSER_CACHE_DIR }}
+          key: ${{ runner.os }}-php${{ env.PHP_VERSION }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php${{ env.PHP_VERSION }}-composer-latest-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-progress
+
+      - name: Wait for PostgreSQL
+        run: |
+          for i in {1..10}; do
+            php bin/console doctrine:query:sql "SELECT 1" --env=test --no-interaction && break
+            sleep 3
+          done
+
+      - name: Warm up Symfony cache
+        run: php bin/console cache:warmup --env=test
+
+      - name: Run Doctrine migrations
+        run: php bin/console doctrine:schema:update --force --env=test --no-interaction
+
+  # - name: Run Doctrine migrations
+  #   run: php bin/console doctrine:migrations:migrate --env=test --no-interaction
+
+      - name: Run PHPUnit tests
+        run: php bin/phpunit --testdox
+
+  security:
+    name: Security Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          tools: composer:v2.8.9
+          extensions: mbstring, pdo_pgsql, xml, intl, bcmath, json, fileinfo, tokenizer, ctype, curl, openssl
+          ini-values: post_max_size=256M, max_execution_time=600, memory_limit=4096M, date.timezone=Europe/Paris
+
+      - name: Setup cache
+        run: echo "COMPOSER_CACHE_DIR=$(composer config cache-dir)/.cache" >> $GITHUB_ENV
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.COMPOSER_CACHE_DIR }}
+          key: ${{ runner.os }}-php${{ env.PHP_VERSION }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php${{ env.PHP_VERSION }}-composer-latest-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-progress
+
+      - name: Run security check
+        run: |
+          composer audit \
+            --format="json" \
+            --abandoned="report" \
+            --ignore-severity="low" \
+            --no-interaction \
+            --no-ansi \
+            --no-dev > composer-security-report.json
+
+      - name: Upload security report
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: security-report
+          path: composer-security-report.json
+          retention-days: 20
+
+
