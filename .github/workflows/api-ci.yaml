@@ -1,9 +1,5 @@
 name: CI API
 
-env:
-  PHP_VERSION: '8.4'
-  OS_NAME: 'ubuntu-24.04'
-
 on:
   push:
     branches:
@@ -16,7 +12,7 @@ on:
 jobs:
   quality:
     name: Static analysis Easy Coding Standard for API
-    runs-on: ${{ env.OS_NAME }}
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout code
@@ -25,7 +21,7 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ env.PHP_VERSION }}
+          php-version: '8.4'
           tools: composer:v2.8.9
           extensions: mbstring, pdo_pgsql, xml, intl, bcmath, json, fileinfo, tokenizer, ctype, curl, openssl
           ini-values: post_max_size=256M, max_execution_time=600, memory_limit=4096M, date.timezone=Europe/Paris
@@ -37,9 +33,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.COMPOSER_CACHE_DIR }}
-          key: ${{ runner.os }}-php${{ env.PHP_VERSION }}-composer-${{ hashFiles('**/composer.lock') }}
+          key: ${{ runner.os }}-php8.4-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
-            ${{ runner.os }}-php${{ env.PHP_VERSION }}-composer-latest-
+            ${{ runner.os }}-php8.4-composer-latest-
 
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-progress
@@ -61,7 +57,7 @@ jobs:
 
   test:
     name: Run Tests for API
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       database:
         image: postgres:16.8-bookworm
@@ -83,7 +79,7 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ env.PHP_VERSION }}
+          php-version: '8.4'
           tools: composer:v2.8.9
           extensions: mbstring, pdo_pgsql, xml, intl, bcmath, json, fileinfo, tokenizer, ctype, curl, openssl
           ini-values: post_max_size=256M, max_execution_time=600, memory_limit=4096M, date.timezone=Europe/Paris
@@ -96,9 +92,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.COMPOSER_CACHE_DIR }}
-          key: ${{ runner.os }}-php${{ env.PHP_VERSION }}-composer-${{ hashFiles('**/composer.lock') }}
+          key: ${{ runner.os }}-php8.4-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
-            ${{ runner.os }}-php${{ env.PHP_VERSION }}-composer-latest-
+            ${{ runner.os }}-php8.4-composer-latest-
 
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-progress
@@ -124,7 +120,7 @@ jobs:
 
   security:
     name: Security Check
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Checkout code
@@ -133,7 +129,7 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ env.PHP_VERSION }}
+          php-version: '8.4'
           tools: composer:v2.8.9
           extensions: mbstring, pdo_pgsql, xml, intl, bcmath, json, fileinfo, tokenizer, ctype, curl, openssl
           ini-values: post_max_size=256M, max_execution_time=600, memory_limit=4096M, date.timezone=Europe/Paris
@@ -145,9 +141,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.COMPOSER_CACHE_DIR }}
-          key: ${{ runner.os }}-php${{ env.PHP_VERSION }}-composer-${{ hashFiles('**/composer.lock') }}
+          key: ${{ runner.os }}-php8.4-composer-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
-            ${{ runner.os }}-php${{ env.PHP_VERSION }}-composer-latest-
+            ${{ runner.os }}-php8.4-composer-latest-
 
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-progress
