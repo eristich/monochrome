@@ -1,0 +1,46 @@
+name: Auto Changelog Generation
+
+permissions:
+  contents: write
+
+on:
+  push:
+    tags:
+      - 'v*' # Match tags like v1.0.0, v2.3.4, etc.
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: 'Release version (e.g. v1.3.0)'
+        required: true
+        type: string
+
+jobs:
+  changelog:
+    name: Generate changelog for ${{ github.event.inputs.release_version || github.ref_name }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # important pour récupérer tout l’historique git
+
+      - name: Install git-cliff
+        run: |
+          curl -sSL -o git-cliff.deb https://github.com/orhun/git-cliff/releases/download/v2.9.1/git-cliff-2.9.1.deb
+          sudo dpkg -i git-cliff.deb
+
+      - name: Generate changelog
+        run: |
+          git-cliff --output CHANGELOG.md --latest
+
+      - name: Show changelog (debug)
+        run: cat CHANGELOG.md
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.release_version || github.ref_name }}
+          name: Release ${{ github.event.inputs.release_version || github.ref_name }}
+          body_path: CHANGELOG.md
+          token: ${{ secrets.GITHUB_TOKEN }}
