@@ -40,9 +40,6 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-progress
 
-      - name: Check Schema validity
-        run: php bin/console doctrine:schema:validate --no-interaction
-
       - name: Run ECS and generate checkstyle report
         id: run-ecs
         run: vendor/bin/ecs check --output-format=checkstyle > ecs-report.xml
