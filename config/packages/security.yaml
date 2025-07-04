@@ -35,11 +35,20 @@ security:
             # https://symfony.com/doc/current/security/impersonating_user.html
             # switch_user: true
 
+    role_hierarchy:
+        ROLE_MODERATOR: ROLE_USER
+        ROLE_ADMIN:     [ROLE_MODERATOR, ROLE_USER]
+
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+        - { path: /api/v1/music/select,                     roles: PUBLIC_ACCESS }
+        - { path: /api/v1/login_check,                      roles: PUBLIC_ACCESS }
+        - { path: /api/v1/user/valid-password-recovery,     roles: PUBLIC_ACCESS }
+        - { path: /api/v1/user/request-password-recovery,   roles: PUBLIC_ACCESS }
+        - { path: /api/v1/user/register,                    roles: PUBLIC_ACCESS }
+        - { path: /api/v1/doc,                              roles: PUBLIC_ACCESS }
+        - { path: ^/api/v1,                                 roles: IS_AUTHENTICATED_FULLY }
 
 when@test:
     security:
