@@ -20,11 +20,13 @@ class TestFixtures extends Fixture implements FixtureGroupInterface
         // music fixtures
         $musicMetadata = [
             'Chameleon' => [
+                'id' => 'b0f05c3b-d289-408e-87e9-274f29305c56',
                 'artist' => 'Hicham Chahidi',
                 'originalFilename' => 'Chameleon.mp3',
                 'ownerId' => '0197bc57-124c-747d-b7a3-20eec51be0b2',
             ],
             'NIGHT' => [
+                'id' => '78f02a1b-dce4-415c-be66-2151afd3fa9b',
                 'artist' => 'KOSMORIDER',
                 'originalFilename' => 'Kosmorider-Night.mp3',
                 'ownerId' => '0197bc57-124c-747d-b7a3-20eec51be0b2',
