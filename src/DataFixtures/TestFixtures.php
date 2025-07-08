@@ -5,10 +5,10 @@ namespace App\DataFixtures;
 use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
+use Symfony\Component\Uid\Uuid;
 use App\Factory\UserFactory;
 use App\Entity\Music;
 use App\Entity\User;
-use Symfony\Component\Uid\Uuid;
 
 class TestFixtures extends Fixture implements FixtureGroupInterface
 {
@@ -76,6 +76,7 @@ class TestFixtures extends Fixture implements FixtureGroupInterface
         foreach ($musicMetadata as $name => $metadata) {
             $music = new Music();
             $music->setName($name)
+                ->setId(Uuid::fromString($metadata['id']))
                 ->setArtist($metadata['artist'])
                 ->setOriginalFilename($metadata['originalFilename'])
                 ->setOwner($manager->getRepository(User::class)->find(Uuid::fromString('0197bc57-124c-747d-b7a3-20eec51be0b2')))
