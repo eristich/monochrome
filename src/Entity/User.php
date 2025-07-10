@@ -18,22 +18,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\Column(type: UuidType::NAME, unique: true)]
-    #[Groups(['music:get-one', 'user:get-self', 'music:get-collection', 'user:get-one'])]
+    #[Groups(['music:get-one', 'user:get-self', 'music:get-collection', 'user:get-one', 'user:admin-get'])]
     private ?Uuid $id = null;
 
     #[ORM\Column(length: 180)]
-    #[Groups(['music:get-one', 'user:get-self', 'user:register', 'music:get-collection', 'user:get-one'])]
+    #[Groups(['music:get-one', 'user:get-self', 'user:register', 'music:get-collection', 'user:get-one', 'user:admin-get'])]
     private ?string $name = null;
 
     #[ORM\Column(length: 255, unique: true)]
-    #[Groups(['user:get-self', 'user:request-password-recovery', 'user:register'])]
+    #[Groups(['user:get-self', 'user:request-password-recovery', 'user:register', 'user:admin-get'])]
     private ?string $email = null;
 
     /**
      * @var list<string> The user roles
      */
     #[ORM\Column]
-    #[Groups(['user:get-self'])]
+    #[Groups(['user:get-self', 'user:admin-edit', 'user:admin-get'])]
     private array $roles = [];
 
     /**
@@ -54,26 +54,31 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $recoveryCode = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['user:admin-get'])]
     private ?\DateTimeImmutable $recoveryCodeExpiration = null;
 
     #[ORM\Column]
-    #[Groups(['user:get-self'])]
+    #[Groups(['user:get-self', 'user:admin-get'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column]
-    #[Groups(['user:get-self'])]
+    #[Groups(['user:get-self', 'user:admin-get'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['user:admin-get'])]
     private ?\DateTimeImmutable $lastLoginAt = null;
 
     #[ORM\Column]
+    #[Groups(['user:admin-edit', 'user:admin-get'])]
     private ?bool $isBanned = null;
 
     #[ORM\Column]
+    #[Groups(['user:admin-edit', 'user:get-self', 'user:admin-get'])]
     private ?bool $isUploadEnable = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['user:admin-get'])]
     private ?\DateTimeImmutable $lastActivityAt = null;
 
     public function __construct()
