@@ -11,7 +11,7 @@ on:
 
 jobs:
   quality:
-    name: Static analysis Easy Coding Standard for API
+    name: Static Analysis
     runs-on: ubuntu-24.04
 
     steps:
@@ -53,7 +53,7 @@ jobs:
           retention-days: 20
 
   test:
-    name: Run Tests for API
+    name: Run Tests
     runs-on: ubuntu-24.04
     services:
       database:
