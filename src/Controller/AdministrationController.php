@@ -13,10 +13,15 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
 use App\Entity\User;
+use App\Repository\StatDiffusionRepository;
+use App\Dto\ExportStatsCsvPayloadDto;
 
 #[OA\Tag(name: 'Administration')]
 final class AdministrationController extends AbstractController
@@ -75,5 +80,81 @@ final class AdministrationController extends AbstractController
             $normalizer->normalize($user, null, ['groups' => ['user:admin-get']]),
             Response::HTTP_OK
         );
+    }
+
+    #[OA\QueryParameter(
+        name: 'startDate',
+        in: 'query',
+        required: true,
+        description: 'Date de début',
+        schema: new OA\Schema(type: 'string', format: 'date')
+    )]
+    #[OA\QueryParameter(
+        name: 'endDate',
+        in: 'query',
+        required: true,
+        description: 'Date de fin',
+        schema: new OA\Schema(type: 'string', format: 'date')
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Export CSV des statistiques de diffusion',
+        content: new OA\MediaType(mediaType: 'text/csv')
+    )]
+    #[Route('/api/v1/administration/stats/export-csv', name: 'api.v1.administration.stats.export-csv', methods: ['GET'])]
+    #[IsGranted('ROLE_MODERATOR')]
+    public function exportStatsCsv(
+        Request $request,
+        StatDiffusionRepository $statDiffusionRepository,
+        ValidatorInterface $validator
+    ): Response {
+        $payload = new ExportStatsCsvPayloadDto(
+            $request->query->get('startDate', ''),
+            $request->query->get('endDate', '')
+        );
+        // Validation du DTO
+        $violations = $validator->validate($payload);
+        if (count($violations) > 0) {
+            $errors = [];
+            foreach ($violations as $violation) {
+                $errors[] = $violation->getMessage();
+            }
+            return $this->json(['error' => implode(', ', $errors)], Response::HTTP_BAD_REQUEST);
+        }
+
+        // Validation de la plage de dates
+        if (!$payload->isValidDateRange()) {
+            return $this->json(['error' => 'La date de début doit être antérieure à la date de fin'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $stats = $statDiffusionRepository->findByDateRange($payload->getStartDateTime(), $payload->getEndDateTime());
+
+        $response = new StreamedResponse(function () use ($stats) {
+            $handle = fopen('php://output', 'w');
+
+            // En-têtes CSV
+            fputcsv($handle, ['ID', 'Nom', 'Artiste', 'Durée (secondes)', 'Date de diffusion'], ';');
+
+            // Données
+            foreach ($stats as $stat) {
+                fputcsv($handle, [
+                    $stat->getId(),
+                    $stat->getName(),
+                    $stat->getArtist() ?? '-',
+                    $stat->getDuration() ?? '-',
+                    $stat->getCreatedAt()->format('Y-m-d H:i:s')
+                ], ';');
+            }
+
+            fclose($handle);
+        });
+
+        $response->headers->set('Content-Type', 'text/csv; charset=utf-8');
+        $response->headers->set(
+            'Content-Disposition',
+            'attachment; filename="stats_diffusion_' . $payload->getStartDateTime()->format('Y-m-d') . '_to_' . $payload->getEndDateTime()->format('Y-m-d') . '.csv"'
+        );
+
+        return $response;
     }
 }
