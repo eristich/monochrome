@@ -21,6 +21,7 @@ use Nelmio\ApiDocBundle\Attribute\Model;
 use OpenApi\Attributes as OA;
 use App\Entity\User;
 use App\Repository\StatDiffusionRepository;
+use App\Repository\UserRepository;
 use App\Dto\ExportStatsCsvPayloadDto;
 
 #[OA\Tag(name: 'Administration')]
@@ -78,6 +79,49 @@ final class AdministrationController extends AbstractController
 
         return $this->json(
             $normalizer->normalize($user, null, ['groups' => ['user:admin-get']]),
+            Response::HTTP_OK
+        );
+    }
+
+    #[OA\QueryParameter(
+        name: 'page',
+        in: 'query',
+        required: false,
+        description: 'Numéro de page (défaut: 1)',
+        schema: new OA\Schema(type: 'integer', minimum: 1, default: 1)
+    )]
+    #[OA\QueryParameter(
+        name: 'limit',
+        in: 'query',
+        required: false,
+        description: 'Nombre d\'utilisateurs par page (défaut: 10, max: 50)',
+        schema: new OA\Schema(type: 'integer', minimum: 1, maximum: 50, default: 10)
+    )]
+    #[OA\Response(
+        response: 200,
+        description: 'Liste des utilisateurs avec pagination',
+        content: new OA\JsonContent(
+            type: 'array',
+            items: new OA\Items(ref: new Model(type: User::class, groups: ['user:admin-get']))
+        )
+    )]
+    #[Route('/api/v1/administration/users', name: 'api.v1.administration.users.list', methods: ['GET'])]
+    #[IsGranted('ROLE_MODERATOR')]
+    public function getUsers(
+        Request $request,
+        UserRepository $userRepository,
+        NormalizerInterface $normalizer
+    ): JsonResponse {
+        $page = max(1, (int) $request->query->get('page', 1));
+        $limit = min(50, max(1, (int) $request->query->get('limit', 10)));
+
+        /** @var User[] $users */
+        $users = $userRepository->findBy(
+            [], ['createdAt' => 'DESC'], $limit, ($page - 1) * $limit
+        );
+
+        return new JsonResponse(
+            $normalizer->normalize($users, null, ['groups' => ['user:admin-get']]),
             Response::HTTP_OK
         );
     }
