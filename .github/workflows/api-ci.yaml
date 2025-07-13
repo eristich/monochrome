@@ -79,7 +79,7 @@ jobs:
           php-version: '8.4'
           tools: composer:v2.8.9
           extensions: mbstring, pdo_pgsql, xml, intl, bcmath, json, fileinfo, tokenizer, ctype, curl, openssl
-          ini-values: post_max_size=256M, max_execution_time=600, memory_limit=4096M, date.timezone=Europe/Paris
+          ini-values: post_max_size=256M, max_execution_time=600, memory_limit=4096M, date.timezone=Europe/Paris, file_uploads=On, max_file_uploads=10, upload_max_filesize=50M
           coverage: pcov
 
       - name: Setup cache
