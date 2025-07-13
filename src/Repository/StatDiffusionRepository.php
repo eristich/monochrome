@@ -16,6 +16,25 @@ class StatDiffusionRepository extends ServiceEntityRepository
         parent::__construct($registry, StatDiffusion::class);
     }
 
+    /**
+     * Récupère les statistiques de diffusion sur un intervalle de dates
+     *
+     * @param \DateTimeImmutable $startDate
+     * @param \DateTimeImmutable $endDate
+     * @return StatDiffusion[]
+     */
+    public function findByDateRange(\DateTimeImmutable $startDate, \DateTimeImmutable $endDate): array
+    {
+        return $this->createQueryBuilder('s')
+            ->andWhere('s.createdAt >= :startDate')
+            ->andWhere('s.createdAt <= :endDate')
+            ->setParameter('startDate', $startDate)
+            ->setParameter('endDate', $endDate)
+            ->orderBy('s.createdAt', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     //    /**
     //     * @return StatDiffusion[] Returns an array of StatDiffusion objects
     //     */
