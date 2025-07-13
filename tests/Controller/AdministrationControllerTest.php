@@ -2,6 +2,7 @@
 
 namespace App\Tests\Controller;
 
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use App\Tests\CustomTestCase;
 use App\Entity\User;
 
@@ -67,5 +68,19 @@ final class AdministrationControllerTest extends CustomTestCase
 
         $this->assertIsArray($data);
         $this->assertArrayHasKey('error', $data);
+    }
+
+    public function testCanExportStatsCsvSuccess(): void
+    {
+        $client = $this->getAuthenticatedClientByEmail('moderator-user.test@monochrome.app');
+
+        $client->request('GET', '/api/v1/administration/stats/export-csv?startDate=2024-01-15&endDate=2024-01-20');
+
+        $this->assertResponseStatusCodeSame(200);
+        $this->assertResponseHeaderSame('Content-Type', 'text/csv; charset=utf-8');
+        $this->assertResponseHeaderSame('Content-Disposition', 'attachment; filename="stats_diffusion_2024-01-15_to_2024-01-20.csv"');
+
+        $response = $client->getResponse();
+        $this->assertInstanceOf(StreamedResponse::class, $response);
     }
 }
