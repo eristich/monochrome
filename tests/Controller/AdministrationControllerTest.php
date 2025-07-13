@@ -83,4 +83,28 @@ final class AdministrationControllerTest extends CustomTestCase
         $response = $client->getResponse();
         $this->assertInstanceOf(StreamedResponse::class, $response);
     }
+
+    public function testCanGetCompleteUsersListWithPagination(): void
+    {
+        $client = $this->getAuthenticatedClientByEmail('moderator-user.test@monochrome.app');
+
+        $client->request('GET', '/api/v1/administration/users?page=1&limit=3');
+
+        $this->assertResponseStatusCodeSame(200);
+        $this->assertResponseHeaderSame('Content-Type', 'application/json');
+
+        $data = json_decode($client->getResponse()->getContent(), true);
+
+        $this->assertIsArray($data);
+        $this->assertCount(3, $data);
+    }
+
+    public function testCantGetUsersListWithUnauthorizedUser(): void
+    {
+        $client = $this->getAuthenticatedClientByEmail('basic-user.test@monochrome.app');
+
+        $client->request('GET', '/api/v1/administration/users');
+
+        $this->assertResponseStatusCodeSame(403);
+    }
 }
