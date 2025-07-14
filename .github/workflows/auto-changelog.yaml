@@ -25,6 +25,28 @@ jobs:
         with:
           fetch-depth: 0 # important pour récupérer tout l’historique git
 
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer:v2.8.9
+          extensions: mbstring, pdo_pgsql, xml, intl, bcmath, json, fileinfo, tokenizer, ctype, curl, openssl
+          ini-values: post_max_size=256M, max_execution_time=600, memory_limit=4096M, date.timezone=Europe/Paris
+
+      - name: Setup cache
+        run: echo "COMPOSER_CACHE_DIR=$(composer config cache-dir)/.cache" >> $GITHUB_ENV
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.COMPOSER_CACHE_DIR }}
+          key: ${{ runner.os }}-php8.4-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php8.4-composer-latest-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-progress
+
       - name: Install git-cliff
         run: |
           curl -sSL -o git-cliff.deb https://github.com/orhun/git-cliff/releases/download/v2.9.1/git-cliff-2.9.1.deb
@@ -37,6 +59,10 @@ jobs:
       - name: Show changelog (debug)
         run: cat CHANGELOG.md
 
+      - name: Export Nelmio Api REST Documentation
+        run: |
+          php bin/console nelmio:apidoc:dump --format=html > API_REST_DOCUMENTATION.html
+
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -44,3 +70,5 @@ jobs:
           name: Release ${{ github.event.inputs.release_version || github.ref_name }}
           body_path: CHANGELOG.md
           token: ${{ secrets.GITHUB_TOKEN }}
+          files: |
+            API_REST_DOCUMENTATION.html
