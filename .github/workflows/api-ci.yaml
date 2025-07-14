@@ -13,7 +13,9 @@ jobs:
   quality:
     name: Static Analysis
     runs-on: ubuntu-24.04
-
+    defaults:
+      run:
+        working-directory: ./backend
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -55,6 +57,9 @@ jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: ./backend
     services:
       database:
         image: postgres:16.8-bookworm
@@ -137,7 +142,9 @@ jobs:
   security:
     name: Security Check
     runs-on: ubuntu-24.04
-
+    defaults:
+      run:
+        working-directory: ./backend
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
