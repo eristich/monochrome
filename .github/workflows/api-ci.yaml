@@ -69,6 +69,19 @@ jobs:
           --health-interval=5s
           --health-timeout=5s
           --health-retries=5
+
+      mercure:
+        image: dunglas/mercure
+        env:
+          SERVER_NAME: ':80'
+          MERCURE_PUBLISHER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!'
+          MERCURE_SUBSCRIBER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!'
+          MERCURE_EXTRA_DIRECTIVES: |
+            anonymous
+            cors_origins *
+        ports:
+          - 80:80
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
