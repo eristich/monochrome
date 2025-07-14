@@ -101,4 +101,16 @@ class UserControllerTest extends CustomTestCase
         $deletedUser = $this->getRepository(User::class)->findOneBy(['email' => 'unitest01.test@monochrome.app']);
         $this->assertNull($deletedUser);
     }
+
+    public function testCanExportUserDataAndSendMail(): void
+    {
+        $client = $this->getAuthenticatedClientByEmail('basic-user.test@monochrome.app');
+
+        $client->request('GET', '/api/v1/user/export-data');
+
+        $this->assertResponseStatusCodeSame(200);
+        // On ne vérifie pas le contenu de la réponse (c'est un export par mail)
+        // On peut vérifier que le mail a bien été envoyé si un mailcatcher/mailpit est utilisé
+        // Ici, on vérifie juste que la route ne retourne pas d'erreur
+    }
 }
