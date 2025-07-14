@@ -10,17 +10,18 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use App\Dto\ValidPasswordRecoveryPayloadDto;
 use Nelmio\ApiDocBundle\Attribute\Security;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Attribute\Model;
+use App\Service\ExportUserDataService;
 use App\Dto\ChangePasswordPayloadDto;
 use App\Repository\UserRepository;
+use Symfony\Component\Mime\Email;
 use OpenApi\Attributes as OA;
 use App\Entity\User;
-use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Email;
 
 #[OA\Tag(name: 'User')]
 #[Route('/api/v1/user')]
@@ -177,9 +178,9 @@ final class UserController extends AbstractController
 
         // send email to user with a code to reset password
         $email = (new Email())
-            ->from('account-recovery@pocketradio.wav')
+            ->from('account-recovery@monochrome.wav')
             ->to($user->getEmail())
-            ->subject('Code for account recovery - Pocket Radio')
+            ->subject('Code for account recovery - Monochrome')
             ->text('Hello ' . $user->getName() . ', your code for account recovery is: ' . $user->getRecoveryCode() . '. Please use it to reset your password.');
         $mailer->send($email);
 
@@ -232,6 +233,32 @@ final class UserController extends AbstractController
         return $this->json([
             'message' => 'Password changed successfully.',
         ], Response::HTTP_CREATED);
+    }
+
+    #[OA\Response(
+        response: 200,
+        description: 'Export des données personnelles de l\'utilisateur (RGPD) envoyé par mail',
+    )]
+    #[Route('/export-data', name: 'api.v1.user.export-data', methods: ['GET'])]
+    public function exportUserData(
+        ExportUserDataService $exportUserDataService,
+        MailerInterface $mailer
+    ): Response {
+        /** @var User $user */
+        $user = $this->getUser();
+        $json = $exportUserDataService->exportUserData($user);
+        $email = (new Email())
+            ->from('account-export@monochrome.wav')
+            ->to($user->getEmail())
+            ->subject('Export de vos données personnelles - Monochrome')
+            ->text('Bonjour ' . $user->getName() . ",\n\nVous trouverez en pièce jointe l\'export de vos données personnelles au format JSON, conformément au RGPD.\n\nCeci est un envoi automatique, merci de ne pas répondre.")
+            ->attach($json, 'export_rgpd_user.json', 'application/json');
+        try {
+            $mailer->send($email);
+        } catch (\Exception $e) {
+            return $this->json(['error' => 'Failed to send email'], Response::HTTP_BAD_REQUEST);
+        }
+        return new Response(null, Response::HTTP_OK);
     }
 
     #[OA\Response(
