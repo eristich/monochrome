@@ -21,6 +21,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Attribute\Model;
 use App\Service\UploadMusicManager;
 use App\Repository\MusicRepository;
+use App\Entity\StatDiffusion;
 use OpenApi\Attributes as OA;
 use App\Entity\Music;
 
@@ -193,8 +194,9 @@ final class MusicController extends AbstractController
     #[Security(name: null)]
     #[Route('/api/v1/music/select', name: 'api.v1.music.get-random', methods: ['GET'])]
     public function getRandom(
-        MusicRepository                         $musicRepository,
-        \App\Service\UploadMusicManager         $uploadManager,
+        MusicRepository             $musicRepository,
+        UploadMusicManager          $uploadManager,
+        EntityManagerInterface      $em
     ): Response
     {
         // find all music from the database, denormalize, and make random selection
@@ -220,6 +222,15 @@ final class MusicController extends AbstractController
         $response->headers->set('Content-Type', 'audio/mpeg');
         $response->headers->set('Content-Disposition', 'inline; filename="'.$randomMusic->getOriginalFilename().'"');
         $response->headers->set('Content-Length', strlen($uploadManager->getMusicBinaryContent($randomMusic)));
+
+        // add stat diffusion
+        $stat = new StatDiffusion();
+        $stat->setName($randomMusic->getName());
+        $stat->setArtist($randomMusic->getArtist());
+        $stat->setCreatedAt(new \DateTimeImmutable());
+
+        $em->persist($stat);
+        $em->flush();
 
         return $response;
     }
