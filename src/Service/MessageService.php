@@ -21,7 +21,7 @@ class MessageService
         $messageData = new MessagePayloadDto();
         $messageData->content = $content;
         $messageData->userId = $user->getId()->__toString();
-        $messageData->userName = $user->getName();
+        $messageData->username = $user->getName();
 
         // Sérialiser le message pour Mercure
         $messageJson = $this->serializer->serialize($messageData, 'json', ['groups' => ['message:over-sse']]);
