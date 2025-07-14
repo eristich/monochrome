@@ -43,7 +43,6 @@ final class MessageController extends AbstractController
         $message = new Message();
         $message->setContent($messagePayloadDto->content);
         $message->setOwner($this->getUser());
-        $message->setCreatedAt(new \DateTimeImmutable());
 
         $em->persist($message);
         $em->flush();

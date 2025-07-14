@@ -227,7 +227,6 @@ final class MusicController extends AbstractController
         $stat = new StatDiffusion();
         $stat->setName($randomMusic->getName());
         $stat->setArtist($randomMusic->getArtist());
-        $stat->setCreatedAt(new \DateTimeImmutable());
 
         $em->persist($stat);
         $em->flush();
