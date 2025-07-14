@@ -82,6 +82,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['user:admin-get', 'user:export-data'])]
     private ?\DateTimeImmutable $lastActivityAt = null;
 
+    /**
+     * @var Collection<int, Message>
+     */
+    #[ORM\OneToMany(targetEntity: Message::class, mappedBy: 'owner')]
+    private Collection $messages;
+
     public function __construct()
     {
         $this->id =         Uuid::v4();
@@ -90,6 +96,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->isUploadEnable = true;
         $this->updatedAt =  new \DateTimeImmutable();
         $this->createdAt =  new \DateTimeImmutable();
+        $this->messages = new ArrayCollection();
     }
 
     public function getId(): ?Uuid
@@ -308,6 +315,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setLastActivityAt(?\DateTimeImmutable $lastActivityAt): static
     {
         $this->lastActivityAt = $lastActivityAt;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Message>
+     */
+    public function getMessages(): Collection
+    {
+        return $this->messages;
+    }
+
+    public function addMessage(Message $message): static
+    {
+        if (!$this->messages->contains($message)) {
+            $this->messages->add($message);
+            $message->setOwner($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMessage(Message $message): static
+    {
+        if ($this->messages->removeElement($message)) {
+            // set the owning side to null (unless already changed)
+            if ($message->getOwner() === $this) {
+                $message->setOwner(null);
+            }
+        }
 
         return $this;
     }
