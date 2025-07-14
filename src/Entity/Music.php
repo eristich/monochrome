@@ -14,11 +14,11 @@ class Music
 {
     #[ORM\Id]
     #[ORM\Column(type: UuidType::NAME, unique: true)]
-    #[Groups(['music:get-one', 'music:get-collection'])]
+    #[Groups(['music:get-one', 'music:get-collection', 'user:export-data'])]
     private ?Uuid $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['music:get-one', 'music:user-edit', 'music:get-collection'])]
+    #[Groups(['music:get-one', 'music:user-edit', 'music:get-collection', 'user:export-data'])]
     private ?string $name = null;
 
     #[ORM\ManyToOne(inversedBy: 'music')]
@@ -26,19 +26,19 @@ class Music
     private ?User $owner = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['music:get-one', 'music:user-edit', 'music:get-collection'])]
+    #[Groups(['music:get-one', 'music:user-edit', 'music:get-collection', 'user:export-data'])]
     private ?string $artist = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['music:get-one', 'music:get-collection'])]
+    #[Groups(['music:get-one', 'music:get-collection', 'user:export-data'])]
     private ?string $originalFilename = null;
 
     #[ORM\Column]
-    #[Groups(['music:get-one', 'music:get-collection'])]
+    #[Groups(['music:get-one', 'music:get-collection', 'user:export-data'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column]
-    #[Groups(['music:get-one', 'music:get-collection'])]
+    #[Groups(['music:get-one', 'music:get-collection', 'user:export-data'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(type: Types::BLOB)]

@@ -18,15 +18,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\Column(type: UuidType::NAME, unique: true)]
-    #[Groups(['music:get-one', 'user:get-self', 'music:get-collection', 'user:get-one', 'user:admin-get'])]
+    #[Groups(['music:get-one', 'user:get-self', 'music:get-collection', 'user:get-one', 'user:admin-get', 'user:export-data'])]
     private ?Uuid $id = null;
 
     #[ORM\Column(length: 180)]
-    #[Groups(['music:get-one', 'user:get-self', 'user:register', 'music:get-collection', 'user:get-one', 'user:admin-get'])]
+    #[Groups(['music:get-one', 'user:get-self', 'user:register', 'music:get-collection', 'user:get-one', 'user:admin-get', 'user:export-data'])]
     private ?string $name = null;
 
     #[ORM\Column(length: 255, unique: true)]
-    #[Groups(['user:get-self', 'user:request-password-recovery', 'user:register', 'user:admin-get'])]
+    #[Groups(['user:get-self', 'user:request-password-recovery', 'user:register', 'user:admin-get', 'user:export-data'])]
     private ?string $email = null;
 
     /**
@@ -40,13 +40,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var string The hashed password
      */
     #[ORM\Column]
-    #[Groups(['user:register'])]
+    #[Groups(['user:register', 'user:export-data'])]
     private ?string $password = null;
 
     /**
      * @var Collection<int, Music>
      */
     #[ORM\OneToMany(targetEntity: Music::class, mappedBy: 'owner')]
+    #[Groups(['user:export-data'])]
     private Collection $music;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -54,19 +55,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $recoveryCode = null;
 
     #[ORM\Column(nullable: true)]
-    #[Groups(['user:admin-get'])]
+    #[Groups(['user:admin-get', 'user:export-data'])]
     private ?\DateTimeImmutable $recoveryCodeExpiration = null;
 
     #[ORM\Column]
-    #[Groups(['user:get-self', 'user:admin-get'])]
+    #[Groups(['user:get-self', 'user:admin-get', 'user:export-data'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column]
-    #[Groups(['user:get-self', 'user:admin-get'])]
+    #[Groups(['user:get-self', 'user:admin-get', 'user:export-data'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(nullable: true)]
-    #[Groups(['user:admin-get'])]
+    #[Groups(['user:admin-get', 'user:export-data'])]
     private ?\DateTimeImmutable $lastLoginAt = null;
 
     #[ORM\Column]
@@ -78,7 +79,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?bool $isUploadEnable = null;
 
     #[ORM\Column(nullable: true)]
-    #[Groups(['user:admin-get'])]
+    #[Groups(['user:admin-get', 'user:export-data'])]
     private ?\DateTimeImmutable $lastActivityAt = null;
 
     public function __construct()
