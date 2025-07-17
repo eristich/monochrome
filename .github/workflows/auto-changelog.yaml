@@ -18,7 +18,9 @@ jobs:
   changelog:
     name: Generate changelog for ${{ github.event.inputs.release_version || github.ref_name }}
     runs-on: ubuntu-latest
-
+    defaults:
+      run:
+        working-directory: ./backend
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -54,10 +56,9 @@ jobs:
 
       - name: Generate changelog
         run: |
+          cd ..
           git-cliff --output CHANGELOG.md --latest
-
-      - name: Show changelog (debug)
-        run: cat CHANGELOG.md
+          cat CHANGELOG.md
 
       - name: Export Nelmio Api REST Documentation
         run: |
@@ -71,4 +72,4 @@ jobs:
           body_path: CHANGELOG.md
           token: ${{ secrets.GITHUB_TOKEN }}
           files: |
-            API_REST_DOCUMENTATION.html
+            backend/API_REST_DOCUMENTATION.html
