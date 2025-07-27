@@ -60,7 +60,7 @@ const LoginPage: React.FC = () => {
             placeholder="Entrez votre e-mail"
             autoFocus
             className="mt-1"
-            data-testId="login-email-input"
+            data-testid="login-email-input"
             aria-label="Adresse e-mail"
             icon={<Icon icon="mdi:email-outline" width={24} height={24} color="black" />}
             error={errors.email?.message}
@@ -71,7 +71,7 @@ const LoginPage: React.FC = () => {
             type="password"
             placeholder="Entrez votre mot de passe"
             className="mt-1"
-            data-testId="login-password-input"
+            data-testid="login-password-input"
             aria-label="Mot de passe"
             icon={<Icon icon="mdi:eye-outline" width={24} height={24} color="black" />}
             error={errors.password?.message}
@@ -92,6 +92,7 @@ const LoginPage: React.FC = () => {
         <Link
           to="/app/auth/forgot-password"
           className="text-sm text-black underline hover:bg-gray-100"
+          data-testid="login-forgot-password-link"
           aria-label="Lien vers la page de réinitialisation du mot de passe"
         >
           Mot de passe oublié ?
@@ -99,6 +100,7 @@ const LoginPage: React.FC = () => {
         <Link
           to="/app/auth/register"
           className="text-sm text-black underline hover:bg-gray-100"
+          data-testid="login-register-link"
           aria-label="Lien vers la page de création de compte"
         >
           Créer un compte
