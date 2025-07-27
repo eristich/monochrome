@@ -5,7 +5,6 @@ import UIButton from "../../component/nano/ui-button";
 import { Link, useNavigate } from "react-router-dom";
 import { Icon } from "@iconify/react";
 import { useForm, FormProvider, type SubmitHandler } from "react-hook-form";
-// import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   CreateUserRequestSchema,
@@ -13,12 +12,6 @@ import {
 } from '@/lib/schema/user'
 import { useRegister } from "@/lib/api/hooks/use-user";
 import { toast } from "sonner";
-
-// const registerSchema = z.object({
-//   username: z.string().min(3, { message: 'lol' }).max(30, { message: 'lol' }),
-//   email: z.string().email({ message: "Adresse e-mail invalide" }),
-//   password: z.string().min(6, { message: "Le mot de passe doit contenir au moins 6 caractères" }),
-// });
 
 const RegisterPage: React.FC = () => {
   const registerMutation = useRegister();
@@ -51,7 +44,12 @@ const RegisterPage: React.FC = () => {
         <UITitleH2>Créer un compte</UITitleH2>
       </div>
       <FormProvider {...form}>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-2">
+        <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="space-y-2"
+        data-testid="register-form"
+        aria-label="Formulaire de création de compte"
+        >
           <UIInputText
             label="Nom"
             type="text"
@@ -59,6 +57,8 @@ const RegisterPage: React.FC = () => {
             autoFocus
             className="mt-1"
             icon={<Icon icon="mdi:user-outline" width={24} height={24} color="black" />}
+            data-testid="register-name-input"
+            aria-label="Nom de l'utilisateur"
             error={errors.name?.message}
             {...form.register('name')}
           />
@@ -68,6 +68,8 @@ const RegisterPage: React.FC = () => {
             placeholder="Entrez votre adresse e-mail"
             className="mt-1"
             icon={<Icon icon="mdi:email-outline" width={24} height={24} color="black" />}
+            data-testid="register-email-input"
+            aria-label="Adresse e-mail"
             error={errors.email?.message}
             {...form.register('email')}
           />
@@ -76,11 +78,18 @@ const RegisterPage: React.FC = () => {
             type="password"
             placeholder="Entrez votre mot de passe"
             className="mt-1"
+            data-testid="register-password-input"
+            aria-label="Mot de passe"
             icon={<Icon icon="mdi:lock-outline" width={24} height={24} color="black" />}
             error={errors.password?.message}
             {...form.register('password')}
           />
-        <UIButton type="submit" disabled={registerMutation.isPending}>
+          <UIButton
+            type="submit"
+            disabled={registerMutation.isPending}
+            data-testid="register-button"
+            aria-label="Bouton de création de compte"
+          >
           <Icon icon="mdi:register-outline" width={24} height={24} color="white" />
             S'enregistrer
           </UIButton>
@@ -90,12 +99,16 @@ const RegisterPage: React.FC = () => {
         <Link
           to="/app/auth/forgot-password"
           className="text-sm text-black underline hover:bg-gray-100"
+          data-testid="register-forgot-password-link"
+          aria-label="Lien vers la page de récupération de mot de passe"
         >
           Mot de passe oublié ?
         </Link>
         <Link
           to="/app/auth/login"
           className="text-sm text-black underline hover:bg-gray-100"
+          data-testid="register-login-link"
+          aria-label="Lien vers la page de connexion"
         >
           Se connecter
         </Link>
