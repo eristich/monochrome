@@ -1,14 +1,13 @@
-name: Frontend CI
+name: CI APP
 
 on:
   push:
-    branches: [ main, develop ]
-    paths:
-      - 'frontend/**'
+    branches:
+      - dev
+      - staging
+      - main
   pull_request:
-    branches: [ main, develop ]
-    paths:
-      - 'frontend/**'
+  workflow_dispatch:
 
 jobs:
   quality:
