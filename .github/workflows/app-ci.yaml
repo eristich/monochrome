@@ -1,0 +1,130 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'frontend/**'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'frontend/**'
+
+jobs:
+  quality:
+    name: Quality Check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '23.7.0'
+          cache: 'yarn'
+          cache-dependency-path: './frontend/yarn.lock'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Lint code
+        run: yarn lint
+
+      - name: Type check
+        run: yarn build --dry-run || npx tsc --noEmit
+
+      - name: Check formatting
+        run: |
+          if command -v npx prettier >/dev/null 2>&1; then
+            npx prettier --check .
+          else
+            echo "Prettier not found, skipping format check"
+          fi
+
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '23.7.0'
+          cache: 'yarn'
+          cache-dependency-path: './frontend/yarn.lock'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Audit dependencies
+        run: yarn audit --level moderate
+
+      - name: Check for outdated packages
+        run: |
+          echo "Checking for outdated packages..."
+          yarn outdated || echo "Some packages are outdated (this is informational)"
+
+      - name: Run Snyk security scan
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+        continue-on-error: true
+
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '23.7.0'
+          cache: 'yarn'
+          cache-dependency-path: './frontend/yarn.lock'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Run tests
+        run: yarn test:run
+
+      - name: Run tests with coverage
+        run: yarn test:run --coverage
+        continue-on-error: true
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./frontend/coverage/lcov.info
+          flags: frontend
+          name: frontend-coverage
+        continue-on-error: true
+
+      - name: Build application
+        run: yarn build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: ./frontend/dist
+          retention-days: 7
