@@ -6,15 +6,35 @@ import LoginPage from '@/page/auth/login-page'
 import RegisterPage from '@/page/auth/register-page'
 import AuthLayout from '@/layout/auth-layout'
 import RequireAuthLayout from '@/layout/require-auth-layout'
-import HomePage from '@/page/home-page'
 import ForgotPasswordPage from '@/page/auth/forgot-password-page'
-import SettingPage from '@/page/setting-page'
-import MusicPage from '@/page/music-page'
-import SettingExportDiffusionPage from '@/page/setting-export-diffusion-page'
-import SettingChangePasswordPage from '@/page/setting-change-password-page'
-import MusicDetailPage from '@/page/music-detail-page'
-import NotFoundPage from '@/page/not-found-page'
-import SettingReportPage from '@/page/setting-report-page'
+import SettingPage from '@/page/setting/setting-page'
+import MusicPage from '@/page/main/music-page'
+import SettingChangePasswordPage from '@/page/setting/setting-change-password-page'
+// import SettingExportDiffusionPage from '@/page/setting/setting-export-diffusion-page'
+// import HomePage from '@/page/main/home-page'
+// import MusicDetailPage from '@/page/main/music-detail-page'
+// import NotFoundPage from '@/page/not-found-page'
+// import SettingReportPage from '@/page/setting/setting-report-page'
+
+function HomePage() {
+  return <div>HomePage</div>
+}
+
+function SettingReportPage() {
+  return <div>SettingReportPage</div>
+}
+
+function SettingExportDiffusionPage() {
+  return <div>SettingExportDiffusionPage</div>
+}
+
+function MusicDetailPage() {
+  return <div>MusicDetailPage</div>
+}
+
+function NotFoundPage() {
+  return <div>NotFoundPage</div>
+}
 
 const router = createBrowserRouter([
   {
