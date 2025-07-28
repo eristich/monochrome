@@ -1,6 +1,15 @@
-export default function UIMonochromeIcon() {
+type Props = React.ComponentProps<'svg'>;
+
+const UIMonochromeIcon: React.FC<Props> = (props) => {
   return (
-    <svg width="91" height="94" viewBox="0 0 91 94" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg
+      width="91"
+      height="94"
+      viewBox="0 0 91 94"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
       <g clipPath="url(#clip0_116_672)">
       <path d="M39.4972 47C39.4972 72.9574 73.7606 94 47.5174 94C21.2743 94 0 72.9574 0 47C0 21.0426 21.2743 0 47.5174 0C73.7606 0 39.4972 21.0426 39.4972 47Z" fill="url(#paint0_linear_116_672)"/>
       <circle cx="72.0954" cy="47.0862" r="18.9725" fill="url(#paint1_linear_116_672)"/>
@@ -21,3 +30,5 @@ export default function UIMonochromeIcon() {
     </svg>
   )
 }
+
+export default UIMonochromeIcon;
