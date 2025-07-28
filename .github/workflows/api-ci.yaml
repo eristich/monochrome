@@ -6,6 +6,8 @@ on:
       - dev
       - staging
       - main
+    paths:
+      - 'backend/**'
   pull_request:
   workflow_dispatch:
 

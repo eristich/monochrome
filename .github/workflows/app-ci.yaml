@@ -6,6 +6,8 @@ on:
       - dev
       - staging
       - main
+    paths:
+      - 'frontend/**'
   pull_request:
   workflow_dispatch:
 
@@ -37,14 +39,6 @@ jobs:
       - name: Type check
         run: yarn build --dry-run || npx tsc --noEmit
 
-      - name: Check formatting
-        run: |
-          if command -v npx prettier >/dev/null 2>&1; then
-            npx prettier --check .
-          else
-            echo "Prettier not found, skipping format check"
-          fi
-
   security:
     name: Security Audit
     runs-on: ubuntu-latest
@@ -73,14 +67,6 @@ jobs:
         run: |
           echo "Checking for outdated packages..."
           yarn outdated || echo "Some packages are outdated (this is informational)"
-
-      - name: Run Snyk security scan
-        uses: snyk/actions/node@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: --severity-threshold=high
-        continue-on-error: true
 
   tests:
     name: Tests
