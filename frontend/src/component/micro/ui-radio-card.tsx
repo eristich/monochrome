@@ -19,7 +19,7 @@ export default function UIRadioCard() {
       }}
     >
       <img
-        src="/music-cover.png"
+        src="/app/music-cover.png"
         alt="Cover"
         className="rounded-md object-cover aspect-square h-full"
       />

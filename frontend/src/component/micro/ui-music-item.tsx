@@ -19,7 +19,7 @@ const UIMusicItem: React.FC<UIMusicItemProps> = ({ music, ...props }) => {
       {...props}
     >
       <div className="flex flex-row items-center gap-4">
-        <img src="/music-cover.png" alt={music.name} className="w-12 h-12 rounded-md object-cover aspect-square" />
+        <img src="/app/music-cover.png" alt={music.name} className="w-12 h-12 rounded-md object-cover aspect-square" />
         <div className="flex-1 flex flex-col min-w-0">
           <div className="relative w-40 overflow-hidden">
             <span
