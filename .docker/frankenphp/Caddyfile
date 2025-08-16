@@ -1,0 +1,126 @@
+{
+	{$CADDY_GLOBAL_OPTIONS}
+
+	frankenphp {
+		{$FRANKENPHP_CONFIG}
+	}
+}
+
+{$CADDY_EXTRA_CONFIG}
+
+# Accepte n'importe quel nom de domaine (géré par Traefik)
+:80 {
+	# Gestion des requêtes Mercure (doit être avant /api/v1/*)
+	handle /.well-known/mercure* {
+		encode zstd br gzip
+		mercure {
+			# Transport to use (default to Bolt)
+			# transport bolt:///var/run/mercure.db?size=100&cleanup_frequency=0.4
+			transport bolt {
+				path /var/run/mercure.db
+				size 100
+				cleanup_frequency 0.4
+			}
+			# Publisher JWT key
+			publisher_jwt {env.MERCURE_PUBLISHER_JWT_KEY} {env.MERCURE_PUBLISHER_JWT_ALG}
+			# Subscriber JWT key
+			subscriber_jwt {env.MERCURE_SUBSCRIBER_JWT_KEY} {env.MERCURE_SUBSCRIBER_JWT_ALG}
+			# Allow anonymous subscribers (double-check that it's what you want)
+			anonymous
+			# Enable the subscription API (double-check that it's what you want)
+			subscriptions
+			# Extra directives
+			{$MERCURE_EXTRA_DIRECTIVES}
+		}
+	}
+
+	# Gestion des requêtes API
+	handle /api/v1/* {
+		root * /api/public
+		encode zstd br gzip
+		vulcain
+		# Add links to the API docs and to the Mercure Hub if not set explicitly (e.g. the PWA)
+		header ?Link `</docs.jsonld>; rel="http://www.w3.org/ns/hydra/core#apiDocumentation", </.well-known/mercure>; rel="mercure"`
+		# Disable Topics tracking if not enabled explicitly: https://github.com/jkarlin/topics
+		header ?Permissions-Policy "browsing-topics=()"
+		php_server
+	}
+
+	# Gestion du frontend React SPA
+	# Sert les fichiers statiques du frontend
+	handle /app/* {
+		root * /app/public
+		encode zstd br gzip
+		
+		# Gestion des routes SPA - redirige vers index.html pour les routes non trouvées
+		try_files {path} /index.html
+		
+		# Headers pour le cache des assets statiques
+		@static path_regexp \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$
+		header @static Cache-Control "public, max-age=31536000, immutable"
+		
+		# Headers pour les fichiers HTML (pas de cache)
+		@html path_regexp \.html$
+		header @html Cache-Control "no-cache, no-store, must-revalidate"
+		
+		# Headers de sécurité
+		header {
+			# Protection XSS
+			X-Content-Type-Options nosniff
+			X-Frame-Options DENY
+			X-XSS-Protection "1; mode=block"
+			# Politique de sécurité du contenu (CSP) - à adapter selon vos besoins
+			# Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' ws: wss:;"
+		}
+		
+		# Serve les fichiers statiques
+		file_server
+	}
+
+	# Configuration Icecast avec préfixe dédié pour éviter les collisions
+	# Utilise /radio/* comme préfixe pour toutes les fonctionnalités Icecast
+	@radio_admin path_regexp ^/radio/admin/(.*)
+	@radio_stream path_regexp ^/radio/stream/(.*)
+	@radio_status path_regexp ^/radio/status/(.*)
+	@radio_default path_regexp ^/radio/(.*)
+	
+	# Gestion de l'interface d'administration Icecast
+	handle @radio_admin {
+		rewrite * /admin/{re.1}
+		reverse_proxy icecast:8000
+	}
+	
+	# Gestion des flux audio
+	handle @radio_stream {
+		rewrite * /{re.1}
+		reverse_proxy icecast:8000
+	}
+	
+	# Gestion des pages de statut
+	handle @radio_status {
+		rewrite * /status/{re.1}
+		reverse_proxy icecast:8000
+	}
+	
+	# Gestion des autres pages Icecast (par défaut)
+	handle @radio_default {
+		rewrite * /{re.1}
+		reverse_proxy icecast:8000
+	}
+
+	# Configuration alternative plus simple si vous préférez
+	# @icecast path_regexp ^/icecast/(.*)
+	# handle @icecast {
+	#     rewrite * /{re.1}
+	#     reverse_proxy icecast:8000
+	# }
+
+	log {
+		# Redact the authorization query parameter that can be set by Mercure
+		format filter {
+			request>uri query {
+				replace authorization REDACTED
+			}
+		}
+	}
+}
