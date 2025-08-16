@@ -52,7 +52,7 @@ class UserFactory
 
     public function createBannedUser(string $email, string $name, string $plainPassword, ?string $uuid = null): User
     {
-        $user = $this->createUser($email, $name, $plainPassword, $uuid);
+        $user = $this->createUser($email, $name, $plainPassword, 'ROLE_USER', $uuid);
         // Assuming you have a method to set banned status
         $user->setIsBanned(true);
         return $user;
