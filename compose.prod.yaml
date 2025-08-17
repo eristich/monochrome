@@ -1,7 +1,5 @@
 services:
     api:
-        container_name: monochrome-api
-        hostname: api
         build:
             context: .
             dockerfile: .docker/api/Dockerfile
@@ -48,8 +46,6 @@ services:
             - traefik.http.services.monochrome-core.loadbalancer.server.port=80
 
     database:
-        container_name: monochrome-database
-        hostname: database
         image: postgres:16.8-bookworm
         environment:
             POSTGRES_DB: ${POSTGRES_DB:-app}
@@ -74,8 +70,6 @@ services:
             - dokploy-network
 
     icecast:
-        container_name: monochrome-icecast
-        hostname: icecast
         build:
             context: .
             dockerfile: .docker/icecast/Dockerfile
